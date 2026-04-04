@@ -87,4 +87,4 @@ Text(_products[index].title ?? '');
 ---
 
 ## 👨‍💻 Maintainers
-Maintained with ❤️ by [Your Name]. Feel free to open issues or PRs!
+Maintained with ❤️ by [Manishdevan D]. Feel free to open issues or PRs!
