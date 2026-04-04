@@ -4,6 +4,12 @@ version: 1.0.0
 homepage: "https://github.com/developermanishdevan/skeletix"
 repository: "https://github.com/developermanishdevan/skeletix"
 issue_tracker: "https://github.com/developermanishdevan/skeletix/issues"
+topics:
+  - skeleton
+  - loading
+  - shimmer
+  - ui
+  - animation
 
 environment:
   sdk: ^3.11.4
