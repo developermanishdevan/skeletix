@@ -1,3 +1,9 @@
+## 1.0.2
+
+* **Analysis Optimization! 📈**
+* Resolved `pub.dev` score issue by shortening the package description to recommended length.
+* Optimized metadata for a perfect 160/160 pub points score.
+
 ## 1.0.1
 
 * **Metadata Optimization! 🚀**
