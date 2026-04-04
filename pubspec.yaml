@@ -1,7 +1,9 @@
 name: skeletix
 description: "A highly advanced, strictly declarative RenderObject automated skeleton generator. Intelligently scans layouts to automatically draw precision placeholders without rigid boilerplate."
 version: 1.0.0
-homepage: "https://github.com/manish/skeletix"
+homepage: "https://github.com/developermanishdevan/skeletix"
+repository: "https://github.com/developermanishdevan/skeletix"
+issue_tracker: "https://github.com/developermanishdevan/skeletix/issues"
 
 environment:
   sdk: ^3.11.4
