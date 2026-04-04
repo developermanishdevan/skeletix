@@ -1,3 +1,11 @@
+## 1.0.1
+
+* **Metadata Optimization! 🚀**
+* Integrated `topics` for better discoverability on `pub.dev`.
+* Updated `pubspec.yaml` with explicit `repository` and `issue_tracker` links.
+* Updated standard `README.md` with correct raw Demo GIF animation URLs.
+* Enhanced package description for official publishing.
+
 ## 1.0.0
 
 * **Initial Production Release! 🎉**
