@@ -6,7 +6,7 @@ Unlike traditional skeleton packages that force you to manually rewrite "dummy" 
 
 Build your UI exactly once structurally using dummy Strings, wrap it in `<SkeletiX>`, and never think about loaders again.
 
-<img src="https://raw.githubusercontent.com/manish/skeletix/main/demo.gif" height="400"/>
+<img src="https://raw.githubusercontent.com/developermanishdevan/skeletix/main/skeletix1_demo.gif" height="400"/>
 
 ---
 
