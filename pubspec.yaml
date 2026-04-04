@@ -1,0 +1,19 @@
+name: skeletix
+description: "A highly advanced, strictly declarative RenderObject automated skeleton generator. Intelligently scans layouts to automatically draw precision placeholders without rigid boilerplate."
+version: 1.0.0
+homepage: "https://github.com/manish/skeletix"
+
+environment:
+  sdk: ^3.11.4
+  flutter: ">=1.17.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
