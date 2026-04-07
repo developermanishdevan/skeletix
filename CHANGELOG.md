@@ -1,3 +1,11 @@
+## 1.1.0
+
+*   **Global Theme Static Configuration! 🎨**
+    *   Introduced `SkeletixTheme.configure(...)` to set brand-wide defaults once in `main()`.
+    *   Added **Dual-Mode Support**: Configure separate `skeletonColor` and `shimmerColor` for Light and Dark modes globally.
+    *   **Automatic Theme-Awareness**: SkeletiX now intelligently detects the current `Theme.of(context).brightness` and applies appropriate polished defaults if no config is provided.
+    *   **Simplified API**: Removed the need for the `SkeletixTheme` InheritedWidget, making the package truly "set-and-forget".
+
 ## 1.0.2
 
 * **Analysis Optimization! 📈**
