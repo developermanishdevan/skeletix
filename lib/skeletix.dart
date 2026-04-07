@@ -24,6 +24,33 @@ import 'package:flutter/rendering.dart';
 ///   child: const UserProfileCard(),
 /// )
 /// ```
+/// A configuration utility for [SkeletiX] widgets.
+///
+/// This provides global defaults for skeleton colors across the application.
+class SkeletixTheme {
+  /// Internal global defaults set via [SkeletixTheme.configure].
+  static Color? _skeletonColor;
+  static Color? _shimmerColor;
+  static Color? _darkSkeletonColor;
+  static Color? _darkShimmerColor;
+
+  /// Globally configures default values for all [SkeletiX] widgets.
+  ///
+  /// This allows you to define separate brand styles for light and dark modes
+  /// in your `main()` method once for the entire application.
+  static void configure({
+    Color? skeletonColor,
+    Color? shimmerColor,
+    Color? darkSkeletonColor,
+    Color? darkShimmerColor,
+  }) {
+    _skeletonColor = skeletonColor;
+    _shimmerColor = shimmerColor;
+    _darkSkeletonColor = darkSkeletonColor;
+    _darkShimmerColor = darkShimmerColor;
+  }
+}
+
 class SkeletiX extends StatelessWidget {
   /// Defines whether the skeleton loading state should be overlayed onto the [child].
   ///
@@ -51,6 +78,18 @@ class SkeletiX extends StatelessWidget {
   /// the automatic skeleton layout.
   final Widget child;
 
+  /// The color of the skeleton blocks.
+  ///
+  /// If null, it defaults to [SkeletixTheme.configure] or a color matching
+  /// the current theme's brightness.
+  final Color? skeletonColor;
+
+  /// The color of the shimmer effect sweep.
+  ///
+  /// If null, it defaults to [SkeletixTheme.configure] or a semi-transparent
+  /// white in light mode / semi-transparent light-grey in dark mode.
+  final Color? shimmerColor;
+
   /// Creates a [SkeletiX] automatic loading wrapper.
   const SkeletiX({
     super.key,
@@ -59,6 +98,8 @@ class SkeletiX extends StatelessWidget {
     this.onRetry,
     this.customErrorWidget,
     required this.child,
+    this.skeletonColor,
+    this.shimmerColor,
   });
 
   @override
@@ -68,11 +109,31 @@ class SkeletiX extends StatelessWidget {
     }
 
     if (loading) {
+      final isDark = Theme.of(context).brightness == Brightness.dark;
+
+      // 1. Resolve Skeleton Color
+      // Priority: Widget instance -> Global Static Theme (Mode specific) -> Built-in Mode default
+      final Color resolvedSkeletonColor = skeletonColor ??
+          (isDark
+              ? (SkeletixTheme._darkSkeletonColor ?? const Color(0xFF333333))
+              : (SkeletixTheme._skeletonColor ?? const Color(0xFFE0E0E0)));
+
+      // 2. Resolve Shimmer Color
+      // Priority: Widget instance -> Global Static Theme (Mode specific) -> Built-in Mode default
+      final Color resolvedShimmerColor = shimmerColor ??
+          (isDark
+              ? (SkeletixTheme._darkShimmerColor ?? Colors.white.withAlpha(25))
+              : (SkeletixTheme._shimmerColor ?? Colors.white.withAlpha(102)));
+
       return _SkeletixShimmer(
+        shimmerColor: resolvedShimmerColor,
         child: IgnorePointer(
           ignoring:
               true, // Prevents all scrolling and button clipping while loading
-          child: _SkeletixRenderWidget(child: child),
+          child: _SkeletixRenderWidget(
+            skeletonColor: resolvedSkeletonColor,
+            child: child,
+          ),
         ),
       );
     }
@@ -130,15 +191,25 @@ class SkeletiX extends StatelessWidget {
 /// This widget never changes the physical UI layout hierarchy; it acts as an invisible
 /// interceptor perfectly sized to its enclosed [child].
 class _SkeletixRenderWidget extends SingleChildRenderObjectWidget {
-  const _SkeletixRenderWidget({required Widget child}) : super(child: child);
+  final Color skeletonColor;
+  const _SkeletixRenderWidget({
+    required this.skeletonColor,
+    required Widget child,
+  }) : super(child: child);
 
   @override
   RenderObject createRenderObject(BuildContext context) {
-    return _RenderSkeletix();
+    return _RenderSkeletix(skeletonColor: skeletonColor);
   }
 
   @override
-  void updateRenderObject(BuildContext context, _RenderSkeletix renderObject) {}
+  void updateRenderObject(
+      BuildContext context, _RenderSkeletix renderObject) {
+    if (renderObject.skeletonColor != skeletonColor) {
+      renderObject.skeletonColor = skeletonColor;
+      renderObject.markNeedsPaint();
+    }
+  }
 }
 
 /// A lightweight data class holding the exact spatial geometry and corner rounding
@@ -162,7 +233,8 @@ class _SkeletonBox {
 
 /// The intercepting [RenderProxyBox] manipulating the canvas painting phase.
 class _RenderSkeletix extends RenderProxyBox {
-  _RenderSkeletix();
+  Color skeletonColor;
+  _RenderSkeletix({required this.skeletonColor});
 
   @override
   void paint(PaintingContext context, Offset offset) {
@@ -346,7 +418,7 @@ class _RenderSkeletix extends RenderProxyBox {
     }
 
     // 3. Render precision geometries replacing the detected target areas.
-    final paint = Paint()..color = const Color(0xFFE0E0E0);
+    final paint = Paint()..color = skeletonColor;
     for (var box in boxes) {
       if (box.shape == BoxShape.circle) {
         context.canvas.drawCircle(box.rect.center, box.rect.width / 2, paint);
@@ -373,8 +445,12 @@ class _RenderSkeletix extends RenderProxyBox {
 /// This runs using a purely GPU-accelerated [ShaderMask] instead of rebuilding layout.
 class _SkeletixShimmer extends StatefulWidget {
   final Widget child;
+  final Color shimmerColor;
 
-  const _SkeletixShimmer({required this.child});
+  const _SkeletixShimmer({
+    required this.child,
+    required this.shimmerColor,
+  });
 
   @override
   State<_SkeletixShimmer> createState() => _SkeletixShimmerState();
@@ -410,9 +486,9 @@ class _SkeletixShimmerState extends State<_SkeletixShimmer>
             // Generates the sweeping frosty beam of light translating across contents
             final gradient = LinearGradient(
               colors: [
-                Colors.white.withAlpha(0),
-                Colors.white.withAlpha(102), // 0.4 mapped to alpha
-                Colors.white.withAlpha(0),
+                widget.shimmerColor.withAlpha(0),
+                widget.shimmerColor,
+                widget.shimmerColor.withAlpha(0),
               ],
               stops: const [0.0, 0.5, 1.0],
               begin: const Alignment(-1.0, -0.3),

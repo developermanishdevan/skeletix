@@ -13,9 +13,9 @@ Build your UI exactly once structurally using dummy Strings, wrap it in `<Skelet
 ## 🌟 Why use SkeletiX?
 1. **100% Purely Declarative:** No more `_isLoading ? SkeletonBlock() : RealLayout()` everywhere. Just pass `loading: true` onto the parent wrapper.
 2. **True Geometric Analysis:** Intercepts low-level Flutter geometries (`RenderDecoratedBox`, `RenderPhysicalShape`, `ShapeDecoration`) via `SingleChildRenderObjectWidget` to trace exactly what is on the screen without touching layout spaces, paddings, or grid ratios natively.
-3. **Scroll-Locked Safety:** Natively injects `IgnorePointer` during load phases. Completely blocks all touch events and viewport scrolling natively so users cannot accidentally click buttons or tear screen offsets before data stabilizes.
-4. **Instant Network Protections:** Shipped alongside `SkeletixImage`, explicitly designed to prevent standard `Image.network(null)` crashes before URLs are fetched.
-5. **Built-in Error Handling:** Seamlessly intercepts loading routines into full error views, supplying customizable `onRetry` buttons and totally custom Screen-swaps explicitly.
+3. **Automatic Theme-Awareness:** Intelligently detects **Light and Dark mode** brightness. Applies polished, mode-specific defaults for skeletons and shimmers out-of-the-box.
+4. **Scroll-Locked Safety:** Natively injects `IgnorePointer` during load phases. Completely blocks all touch events and viewport scrolling natively so users cannot accidentally click buttons or tear screen offsets before data stabilizes.
+5. **Instant Network Protections:** Shipped alongside `SkeletixImage`, explicitly designed to prevent standard `Image.network(null)` crashes before URLs are fetched.
 
 ---
 
@@ -24,14 +24,32 @@ Build your UI exactly once structurally using dummy Strings, wrap it in `<Skelet
 Add to your `pubspec.yaml`:
 ```yaml
 dependencies:
-  skeletix: ^1.0.0
+  skeletix: ^1.1.0
 ```
 
 ---
 
 ## 🛠️ Usage
 
-### 1. Simple Drop-In
+### 1. Global Configuration (Recommended)
+You can define your brand's loading aesthetic once in your `main()` function for both Light and Dark modes. **SkeletiX** will automatically switch between these based on the system theme.
+
+```dart
+void main() {
+  SkeletixTheme.configure(
+    // Light Mode
+    skeletonColor: const Color(0xFFF0F0F0),
+    shimmerColor: Colors.white70,
+    // Dark Mode
+    darkSkeletonColor: const Color(0xFF242424),
+    darkShimmerColor: Colors.white12,
+  );
+
+  runApp(const MyApp());
+}
+```
+
+### 2. Simple Drop-In
 Wrap your pre-existing view entirely inside the `SkeletiX` engine.
 
 ```dart
@@ -43,46 +61,41 @@ SkeletiX(
 )
 ```
 
-### 2. Handling Network Images Crash-Free
-Standard `Image.network` natively throws unrecoverable Render Exceptions if passed a `null` URL before data hits. 
-
-Simply replace it with `SkeletixImage`! If the URL is `null`, it gracefully drops a transparent block which the `SkeletiX` Engine natively reads and turns into a precision-cut generic Skeleton Loader image box!
+### 3. Handling Network Images Crash-Free
+Simply replace standard network images with `SkeletixImage`! 
 
 ```dart
-ClipRRect(
-  borderRadius: BorderRadius.circular(12),
-  child: SkeletixImage.network(
-    product.imageUrl, // Perfectly safe if null!
-    width: 200,
-    fit: BoxFit.cover,
-  ),
+SkeletixImage.network(
+  product.imageUrl, // Perfectly safe if null!
+  width: 200,
+  fit: BoxFit.cover,
 )
-```
-
-### 3. Dummy Data Sizing Rule 
-To generate structurally beautiful grid or list skeletons, the UI **must physically take up layout space**. If you supply `Text(null ?? '')`, Flutter collapses its width to `0.0`, resulting in a tiny, empty box.
-
-Supply standard mock strings/arrays while waiting for actual server data:
-```dart
-// The string 'Loading Title...' ensures the grid-card naturally keeps its padded layout shape!
-final List<Product> _products = apiData?.products ?? List.generate(4, (_) => Product('Loading Title...', null));
-
-...
-
-Text(_products[index].title ?? '');
 ```
 
 ---
 
 ## 🎨 API Properties
 
+### `SkeletixTheme.configure()` (Global)
+
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `loading` | `bool` | Instantly replaces textual leaves, avatars, and images with sweeping, frosty geometric shimmers. Locks all user touch/scroll events. |
-| `error` | `Object?` | Replaces the view with a natively supplied Red Icon/Text error state. Instantly stops shimmer execution. |
-| `onRetry` | `VoidCallback?` | Drops an automatic standard "Try Again" widget below your error string. |
-| `customErrorWidget`| `Widget?` | Completely overrides the native string error view above. Take full customized control layout of failure states. |
-| `child` | `Widget` | Your native, gorgeous, real screen layout logic requiring mapping! |
+| `skeletonColor` | `Color?` | Base color for skeletons in Light Mode. |
+| `shimmerColor` | `Color?` | Animation sweep color in Light Mode. |
+| `darkSkeletonColor` | `Color?` | Base color for skeletons in Dark Mode. |
+| `darkShimmerColor` | `Color?` | Animation sweep color in Dark Mode. |
+
+### `SkeletiX` (Widget)
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `loading` | `bool` | Instantly replaces textual leaves, avatars, and images with shimmers. |
+| `error` | `Object?` | Replaces the view with a simple Error state. |
+| `skeletonColor` | `Color?` | Local override for the base skeleton color. |
+| `shimmerColor` | `Color?` | Local override for the shimmer sweep color. |
+| `onRetry` | `VoidCallback?` | Adds an automatic "Try Again" button below your error string. |
+| `customErrorWidget`| `Widget?` | Completely overrides the native string error view. |
+| `child` | `Widget` | Your real screen layout logic. |
 
 ---
 

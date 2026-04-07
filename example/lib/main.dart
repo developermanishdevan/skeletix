@@ -2,6 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:skeletix/skeletix.dart';
 
 void main() {
+  // Global configuration example - setting separate brand defaults for light and dark modes
+  SkeletixTheme.configure(
+    // Light Mode Defaults
+    skeletonColor: const Color(0xFFF0F0F0),
+    shimmerColor: Colors.white54,
+    // Dark Mode Defaults
+    darkSkeletonColor: const Color(0xFF242424),
+    darkShimmerColor: Colors.white10,
+  );
+
   runApp(const MyApp());
 }
 
@@ -43,25 +53,49 @@ class EcomData {
 // APP ENTRY
 // ============================================================================
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  ThemeMode _themeMode = ThemeMode.light;
+
+  void _toggleTheme() {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.light
+          ? ThemeMode.dark
+          : ThemeMode.light;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'SkeletiX E-commerce Demo',
       debugShowCheckedModeBanner: false,
+      themeMode: _themeMode,
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const EcomHomePage(),
+      darkTheme: ThemeData(
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.deepPurple,
+          brightness: Brightness.dark,
+        ),
+        useMaterial3: true,
+      ),
+      home: EcomHomePage(onToggleTheme: _toggleTheme),
     );
   }
 }
 
 class EcomHomePage extends StatefulWidget {
-  const EcomHomePage({super.key});
+  final VoidCallback onToggleTheme;
+  const EcomHomePage({super.key, required this.onToggleTheme});
 
   @override
   State<EcomHomePage> createState() => _EcomHomePageState();
@@ -151,17 +185,24 @@ class _EcomHomePageState extends State<EcomHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
       appBar: AppBar(
         title: const Text(
           'SkeletiX Store',
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         actions: [
+          IconButton(
+            icon: Icon(isDark ? Icons.light_mode : Icons.dark_mode),
+            onPressed: widget.onToggleTheme,
+            tooltip: "Toggle Theme",
+          ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _fetchApiData,
@@ -172,17 +213,12 @@ class _EcomHomePageState extends State<EcomHomePage> {
             onPressed: _simulateError,
             tooltip: "Fail Connection",
           ),
-          const IconButton(
-            icon: Icon(Icons.shopping_cart_outlined),
-            onPressed: null,
-          ),
         ],
       ),
       body: SkeletiX(
         loading: _isLoading,
         error: _error,
         onRetry: () => _fetchApiData(),
-        //customErrorWidget: const Center(child: Text('Custom Error Widget')),
         child: _buildEcomLayout(),
       ),
     );
@@ -192,6 +228,8 @@ class _EcomHomePageState extends State<EcomHomePage> {
   /// Notice there is ZERO "_isLoading" logic anywhere inside this method.
   /// SkeletiX inherently understands how to structurally map our data gaps!
   Widget _buildEcomLayout() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     // 1. Array Fallbacks
     // When _data is null during loading, we temporarily yield arrays of nulls.
     final banners = _data?.banners ?? List.generate(1, (_) => BannerAd(null));
@@ -284,7 +322,7 @@ class _EcomHomePageState extends State<EcomHomePage> {
           itemBuilder: (context, index) {
             final product = products[index];
             return Card(
-              color: const Color(0xFFF8F9FA),
+              color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF8F9FA),
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
@@ -318,8 +356,10 @@ class _EcomHomePageState extends State<EcomHomePage> {
                     const SizedBox(height: 4),
                     Text(
                       product.price ?? '',
-                      style: const TextStyle(
-                        color: Colors.deepPurple,
+                      style: TextStyle(
+                        color: isDark
+                            ? Colors.deepPurpleAccent
+                            : Colors.deepPurple,
                         fontWeight: FontWeight.w900,
                         fontSize: 16,
                       ),
